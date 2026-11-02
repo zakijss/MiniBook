@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/hero.jpg" alt="A Miyoo Mini Plus standing next to an open paperback, showing the Onion OS docs in MiniBook" width="100%"></p>
+<p align="center"><img src="docs/hero.jpg" alt="A white Miyoo Mini Plus on a wooden stand next to an open book, showing the Onion OS docs in MiniBook" width="100%"></p>
 
 [![CI](https://github.com/zakijss/MiniBook/actions/workflows/ci.yml/badge.svg)](https://github.com/zakijss/MiniBook/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/zakijss/MiniBook)](https://github.com/zakijss/MiniBook/releases)
@@ -14,7 +14,7 @@ The [Onion OS documentation](https://github.com/OnionUI/Onion) on the Miyoo Mini
 - **START** opens Settings: start on the page you were reading, or clear the saved pages.
 
 
-<p align="center"><img src="docs/desk.jpg" alt="MiniBook running on a Miyoo Mini Plus lying on a desk" width="100%"></p>
+<p align="center"><img src="docs/desk.jpg" alt="A smoked black Miyoo Mini Plus lying by an open book, showing the Onion OS docs in MiniBook" width="100%"></p>
 
 ## Install
 
