@@ -1,0 +1,6 @@
+{
+	"label":	"MiniBook",
+	"icon":	"/mnt/SDCARD/App/MiniBook/icon.png",
+	"launch":	"launch.sh",
+	"description":	"The Onion OS docs, readable offline"
+}

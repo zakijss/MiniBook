@@ -1,0 +1,16 @@
+{
+  "name": "MiniBook",
+  "folder": "MiniBook",
+  "desc": "The Onion OS docs, readable offline",
+  "repo": "zakijss/MiniBook",
+  "license": "MIT",
+  "version": "__VERSION__",
+  "zip": "https://github.com/zakijss/MiniBook/releases/download/v__VERSION__/minibook-__VERSION__.zip",
+  "sha256": "__SHA256__",
+  "size": __SIZE__,
+  "strip": "App/",
+  "released": "__RELEASED__",
+  "facts": [
+    "Reads only; saves pages on the card for offline use."
+  ]
+}
