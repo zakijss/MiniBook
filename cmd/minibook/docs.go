@@ -201,6 +201,9 @@ func (e httpError) Error() string {
 	return fmt.Sprintf("GitHub answered HTTP %d.", int(e))
 }
 
+// maxReply caps one download: the file list or a page.
+const maxReply = 4 << 20
+
 func (d *Docs) get(ctx context.Context, u, etag string) ([]byte, string, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
@@ -220,7 +223,12 @@ func (d *Docs) get(ctx context.Context, u, etag string) ([]byte, string, error) 
 	if resp.StatusCode != 200 {
 		return nil, "", httpError(resp.StatusCode)
 	}
-	b, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
+	// one byte over the cap tells a cut-off reply from one that fits, so a
+	// truncated page is never saved as the current one
+	b, err := io.ReadAll(io.LimitReader(resp.Body, maxReply+1))
+	if err == nil && len(b) > maxReply {
+		return nil, "", errors.New("GitHub's reply is too large")
+	}
 	return b, resp.Header.Get("ETag"), err
 }
 

@@ -706,3 +706,21 @@ func TestPrettyNames(t *testing.T) {
 		t.Errorf("odd paths: %d pages, want 3", nav.Count())
 	}
 }
+
+// TestOversizeReply checks a reply over the cap is refused, not saved cut off.
+func TestOversizeReply(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(make([]byte, maxReply+1))
+	}))
+	defer srv.Close()
+	oldRaw := rawURL
+	rawURL = srv.URL + "/"
+	defer func() { rawURL = oldRaw }()
+	d := NewDocs(t.TempDir(), srv.Client())
+	if _, err := d.Fetch(context.Background(), "big.md"); err == nil {
+		t.Fatal("oversize page accepted")
+	}
+	if _, _, ok := d.Cached("big.md"); ok {
+		t.Error("oversize page saved")
+	}
+}
