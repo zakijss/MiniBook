@@ -115,7 +115,7 @@ func (a *app) settings() {
 			a.cfg.OpenLast = !a.cfg.OpenLast
 			if err := saveSettings(a.dir, a.cfg); err != nil {
 				a.cfg = old
-				s.Notice(a.input, "Couldn't save", err.Error())
+				s.Notice(a.input, "Couldn't save", err.Error()+". Check that the card has free space.")
 			}
 		case rowClear:
 			if ev.Button == ui.A && saved > 0 && s.Confirm(a.input, "Clear saved pages?",
