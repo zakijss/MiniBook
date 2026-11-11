@@ -724,3 +724,38 @@ func TestOversizeReply(t *testing.T) {
 		t.Error("oversize page saved")
 	}
 }
+
+func TestSections(t *testing.T) {
+	pg := Layout(Parse("# Title\n\nIntro.\n\n## Install **it**\n\nText.\n\n### From a zip\n\nMore.\n\n#### Too deep\n\nEnd.\n\n## FAQ\n\nLast."), 400)
+	want := []string{"Install it", "From a zip", "FAQ"}
+	if len(pg.Heads) != len(want) {
+		t.Fatalf("heads %+v, want %v", pg.Heads, want)
+	}
+	for i, h := range pg.Heads {
+		if h.Text != want[i] {
+			t.Errorf("head %d is %q, want %q", i, h.Text, want[i])
+		}
+		if i > 0 && h.Line <= pg.Heads[i-1].Line {
+			t.Errorf("head %q at line %d, not after the one before", h.Text, h.Line)
+		}
+		if l := pg.find(h.Text); l < h.Line || l > h.Line+2 {
+			t.Errorf("head %q at line %d, its text at %d", h.Text, h.Line, l)
+		}
+	}
+}
+
+func TestHandleJumps(t *testing.T) {
+	l := ui.List{Items: make([]ui.Item, 10), Sel: 4}
+	handle(&l, ui.Event{Button: ui.R2, Pressed: true})
+	if l.Sel != 9 {
+		t.Errorf("R2: Sel %d, want 9", l.Sel)
+	}
+	handle(&l, ui.Event{Button: ui.L2, Pressed: true})
+	if l.Sel != 0 {
+		t.Errorf("L2: Sel %d, want 0", l.Sel)
+	}
+	handle(&l, ui.Event{Button: ui.Up, Pressed: true})
+	if l.Sel != 9 {
+		t.Errorf("Up: Sel %d, want 9", l.Sel)
+	}
+}

@@ -86,7 +86,15 @@ type Page struct {
 	Boxes       []Box
 	Links       []PageLink
 	Anchors     map[string]int // heading id -> line
+	Heads       []Head         // the sections, in order, for X
 	Height      int
+}
+
+// Head is a section heading and the line to show it from.
+type Head struct {
+	Text  string
+	Level int
+	Line  int
 }
 
 // ---- measuring ----
@@ -475,7 +483,15 @@ func (lo *layouter) block(b Block, x0, x1 int) {
 		case b.Level >= 4:
 			st.color = ui.Muted
 		}
-		n := lo.text(Inline(b.Text), st, x0, x1)
+		spans := Inline(b.Text)
+		n := lo.text(spans, st, x0, x1)
+		if b.Level >= 2 && b.Level <= 3 {
+			var t strings.Builder
+			for _, sp := range spans {
+				t.WriteString(sp.Text)
+			}
+			lo.pg.Heads = append(lo.pg.Heads, Head{Text: t.String(), Level: b.Level, Line: max(0, n-1)})
+		}
 		if b.Anchor != "" {
 			if _, dup := lo.pg.Anchors[b.Anchor]; !dup {
 				lo.pg.Anchors[b.Anchor] = max(0, n-1)

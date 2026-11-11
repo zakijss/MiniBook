@@ -60,15 +60,18 @@ func main() {
 	a.loadState()
 	a.cfg = loadSettings(dir)
 	go a.d.cache.Prune(32 << 20)
-	if !a.d.HasTree() {
+	had := a.d.HasTree() // if so, refresh it in the background
+	for !a.d.HasTree() {
 		err := a.wait("MiniBook", "Getting the list of pages", func(ctx context.Context) error { return a.d.RefreshTree(ctx) })
-		if err != nil {
-			if !errors.Is(err, context.Canceled) {
-				scr.Notice(a.input, "Can't reach GitHub", "MiniBook downloads the Onion docs the first time it opens. Connect to Wi-Fi and open it again. ("+tnet.Explain(err).Error()+")")
-			}
+		if err == nil {
+			break
+		}
+		if errors.Is(err, context.Canceled) || !scr.Confirm(a.input, "Can't reach GitHub",
+			"MiniBook downloads the Onion docs the first time it opens. Connect to Wi-Fi and try again. ("+tnet.Explain(err).Error()+")", "Try again") {
 			return
 		}
-	} else {
+	}
+	if had {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 			a.d.RefreshTree(ctx)
@@ -165,6 +168,34 @@ func (a *app) wait(title, msg string, fn func(context.Context) error) error {
 
 // ---- lists ----
 
+// handle moves l's selection. L2 and R2 jump to the first and last row,
+// as they jump to the top and bottom of a page.
+func handle(l *ui.List, ev ui.Event) {
+	switch {
+	case ev.Button == ui.L2 && len(l.Items) > 0:
+		l.Sel = 0
+	case ev.Button == ui.R2 && len(l.Items) > 0:
+		l.Sel = len(l.Items) - 1
+	default:
+		l.Handle(ev)
+	}
+}
+
+// ago says how long ago t was: "just now", "5 min ago", "3 h ago",
+// "2 days ago".
+func ago(t, now time.Time) string {
+	d := now.Sub(t)
+	switch {
+	case d < time.Minute:
+		return "just now"
+	case d < time.Hour:
+		return fmt.Sprintf("%d min ago", int(d/time.Minute))
+	case d < 48*time.Hour:
+		return fmt.Sprintf("%d h ago", int(d/time.Hour))
+	}
+	return fmt.Sprintf("%d days ago", int(d/(24*time.Hour)))
+}
+
 func (a *app) item(n *Node) ui.Item {
 	if n.IsList() {
 		sub := n.Desc
@@ -216,6 +247,9 @@ func (a *app) home() {
 		if saved == total {
 			dl = fmt.Sprintf("All %d pages saved", total)
 		}
+		if at := a.d.Fetched(); !at.IsZero() {
+			dl += " · checked " + ago(at, time.Now())
+		}
 		items = append(items, ui.Item{Label: "Download all for offline", Sub: dl})
 		nodes = append(nodes, nil)
 		l.Items = items
@@ -253,7 +287,7 @@ func (a *app) home() {
 		case ui.Start:
 			a.settings()
 		default:
-			l.Handle(ev)
+			handle(&l, ev)
 		}
 	}
 }
@@ -327,7 +361,7 @@ func (a *app) list(dir string) {
 				a.read(p, q)
 			}
 		default:
-			l.Handle(ev)
+			handle(&l, ev)
 		}
 	}
 }
@@ -469,6 +503,10 @@ func (a *app) read(p, find string) {
 			if target, anchor, ok := a.pickLink(pg, top); ok {
 				goTo(target, "", anchor)
 			}
+		case ui.X:
+			if l, ok := a.sections(pg); ok {
+				top = min(l, pg.maxTop(h))
+			}
 		case ui.Y:
 			if target, q, ok := a.search(); ok {
 				goTo(target, q, "")
@@ -495,6 +533,9 @@ func (a *app) drawPage(pg *Page, top int) {
 	hints := []ui.Hint{{Button: "L1/R1", Label: "Page"}}
 	if len(pg.Links) > 0 {
 		hints = append(hints, ui.Hint{Button: "A", Label: "Links"})
+	}
+	if len(pg.Heads) > 1 {
+		hints = append(hints, ui.Hint{Button: "X", Label: "Sections"})
 	}
 	hints = append(hints, ui.Hint{Button: "Y", Label: "Search"}, ui.Hint{Button: "B", Label: "Back"})
 	sub := a.d.Breadcrumb(pg.Path)
@@ -639,6 +680,26 @@ func tint(img *image.RGBA, r image.Rectangle, c color.RGBA, a float64) {
 	}
 }
 
+// sections lists the page's headings (X in the reader) and returns the
+// line of the one chosen.
+func (a *app) sections(pg *Page) (int, bool) {
+	if len(pg.Heads) == 0 {
+		return 0, false
+	}
+	items := make([]ui.Item, len(pg.Heads))
+	for i, h := range pg.Heads {
+		items[i] = ui.Item{Label: sanitize(ui.Heading, h.Text)}
+		if h.Level > 2 {
+			items[i].Label = "· " + items[i].Label
+		}
+	}
+	i, ok := a.scr.Choose(a.input, "Sections", items)
+	if !ok {
+		return 0, false
+	}
+	return pg.Heads[i].Line, true
+}
+
 // pickLink offers the in-doc links on screen (or on the page, if none
 // show) and returns where the chosen one goes.
 func (a *app) pickLink(pg *Page, top int) (string, string, bool) {
@@ -743,7 +804,7 @@ func (a *app) search() (string, string, bool) {
 		case ui.B, ui.Menu:
 			return "", "", false
 		default:
-			l.Handle(ev)
+			handle(&l, ev)
 		}
 	}
 }

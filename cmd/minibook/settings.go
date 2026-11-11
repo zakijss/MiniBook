@@ -106,7 +106,7 @@ func (a *app) settings() {
 		case ui.B, ui.Menu, ui.Start:
 			return
 		default:
-			l.Handle(ev)
+			handle(&l, ev)
 			continue
 		}
 		switch l.Items[l.Sel].Value {

@@ -10,6 +10,7 @@ The [Onion OS documentation](https://github.com/OnionUI/Onion) on the Miyoo Mini
 
 - Every page you open is saved on the card; **Download all for offline** saves the rest.
 - Remembers the page you were reading and your place on each page.
+- **X** on a page lists its sections and jumps to one. **L1**/**R1** turn a screenful, **L2**/**R2** jump to the top or bottom of a page or a list.
 - **Y** searches page titles, and the text of the saved pages.
 - **START** opens Settings: start on the page you were reading, or clear the saved pages.
 

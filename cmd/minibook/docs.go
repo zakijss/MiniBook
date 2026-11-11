@@ -156,6 +156,13 @@ func (d *Docs) rebuild() {
 	}
 }
 
+// Fetched is when the file list was last fetched from GitHub.
+func (d *Docs) Fetched() time.Time {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	return d.tree.Fetched
+}
+
 // HasTree reports whether the file list has been fetched at least once.
 func (d *Docs) HasTree() bool {
 	d.mu.Lock()

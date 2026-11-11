@@ -6,6 +6,17 @@ All notable changes are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **X** on a page lists its sections and jumps to the one you pick.
+- **L2**/**R2** jump to the first or last row of a list, as they already do on a page.
+- Download all for offline says when the list of pages was last checked.
+- When the first download of the list of pages fails, **A** tries again instead of closing MiniBook.
+
+### Changed
+
+- Built with Go 1.27.4, with updated dependencies.
+
 ## [1.0.3] - 2026-11-08
 
 ### Changed

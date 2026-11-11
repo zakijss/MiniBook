@@ -144,4 +144,9 @@ func TestScreens(t *testing.T) {
 	}
 	shot("home", (*app).home)
 	shot("settings", (*app).settings)
+	shot("page", func(a *app) {
+		pg := Layout(Parse("# FAQ\n\nText.\n\n## Wi-Fi\n\n[Install](/install.md) first.\n\n## Saves\n\nMore."), textW)
+		pg.Path = "faq.md"
+		a.drawPage(pg, 0)
+	})
 }
