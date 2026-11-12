@@ -6,6 +6,8 @@ All notable changes are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-12
+
 ### Added
 
 - **X** on a page lists its sections and jumps to the one you pick.
@@ -42,7 +44,8 @@ All notable changes are listed here. The format follows
 
 - The first release: the Onion OS docs, saved for offline reading, with search, and Settings to start on the last page read and to clear the saved pages.
 
-[Unreleased]: https://github.com/zakijss/MiniBook/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/zakijss/MiniBook/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/zakijss/MiniBook/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/zakijss/MiniBook/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/zakijss/MiniBook/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/zakijss/MiniBook/compare/v1.0.0...v1.0.1
