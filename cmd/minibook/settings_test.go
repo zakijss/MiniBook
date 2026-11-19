@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/zakijss/minideck/ui"
 )
@@ -149,4 +151,24 @@ func TestScreens(t *testing.T) {
 		pg.Path = "faq.md"
 		a.drawPage(pg, 0)
 	})
+}
+
+// The place on a page is written at most every 20 s, and a place left
+// unwritten by the last scroll is written by a later frame.
+func TestKeepPlace(t *testing.T) {
+	dir := t.TempDir()
+	a := &app{dir: dir, st: State{Tops: map[string]int{}}, savedAt: time.Now()}
+	a.keepPlace("faq.md", 3)
+	if _, err := os.Stat(filepath.Join(dir, "state.json")); err == nil {
+		t.Fatal("written within 20 s of the last write")
+	}
+	a.savedAt = time.Now().Add(-21 * time.Second)
+	a.keepPlace("faq.md", 3) // a redraw, nothing moved
+	b, err := os.ReadFile(filepath.Join(dir, "state.json"))
+	if err != nil || !strings.Contains(string(b), `"faq.md":3`) {
+		t.Fatalf("not written after 20 s: %s %v", b, err)
+	}
+	if a.dirty {
+		t.Error("still marked unsaved")
+	}
 }

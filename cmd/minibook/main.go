@@ -43,6 +43,7 @@ type app struct {
 	prefetched map[string]bool
 	query      string
 	savedAt    time.Time
+	dirty      bool // the place moved since state.json was written
 }
 
 func main() {
@@ -138,7 +139,23 @@ func (a *app) saveState() {
 	if err := writeJSON(filepath.Join(a.dir, "state.json"), a.st); err != nil {
 		log.Printf("save state: %v", err)
 	}
-	a.savedAt = time.Now()
+	a.savedAt, a.dirty = time.Now(), false
+}
+
+// keepPlace records the place on a page, and writes it to the card at most
+// every 20 s: the place is kept even if the Miyoo is switched off mid-page,
+// without a write on every press. The reader calls it on each frame, and
+// it redraws every few seconds, so a place left unsaved by the last scroll
+// is written soon after.
+func (a *app) keepPlace(p string, top int) {
+	if a.st.Last != p || a.st.Tops[p] != top {
+		a.st.Last = p
+		a.st.Tops[p] = top
+		a.dirty = true
+	}
+	if a.dirty && time.Since(a.savedAt) > 20*time.Second {
+		a.saveState()
+	}
 }
 
 // wait shows a busy screen while fn runs; B cancels it.
@@ -468,15 +485,7 @@ func (a *app) read(p, find string) {
 		top = a.startTop(pg, q, anchor)
 	}
 	for {
-		if a.st.Last != pg.Path || a.st.Tops[pg.Path] != top {
-			a.st.Last = pg.Path
-			a.st.Tops[pg.Path] = top
-			// keep the place even if the Miyoo is switched off mid-page,
-			// without writing to the card on every press
-			if time.Since(a.savedAt) > 20*time.Second {
-				a.saveState()
-			}
-		}
+		a.keepPlace(pg.Path, top)
 		a.drawPage(pg, top)
 		ev, ok := a.next()
 		if !ok {
