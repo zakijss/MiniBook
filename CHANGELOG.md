@@ -6,6 +6,16 @@ All notable changes are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-19
+
+### Added
+
+- Bookmarks: **START** on a page bookmarks it where you are, or removes its bookmark, and lists your bookmarks to jump to one. Home lists them too.
+
+### Fixed
+
+- The place on a page is saved within about 20 seconds of the last scroll, not only on the next press, so switching the Miyoo off mid-page keeps it.
+
 ## [1.1.1] - 2026-11-12
 
 ### Changed
@@ -50,7 +60,8 @@ All notable changes are listed here. The format follows
 
 - The first release: the Onion OS docs, saved for offline reading, with search, and Settings to start on the last page read and to clear the saved pages.
 
-[Unreleased]: https://github.com/zakijss/MiniBook/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/zakijss/MiniBook/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/zakijss/MiniBook/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/zakijss/MiniBook/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/zakijss/MiniBook/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/zakijss/MiniBook/compare/v1.0.2...v1.0.3
