@@ -23,11 +23,18 @@ import (
 	"github.com/zakijss/minideck/version"
 )
 
-// State is what MiniBook remembers between runs: the page last read and where
-// each page was scrolled to.
+// State is what MiniBook remembers between runs: the page last read, where
+// each page was scrolled to, and the bookmarks, oldest first.
 type State struct {
-	Last string         `json:"last"`
-	Tops map[string]int `json:"tops"`
+	Last  string         `json:"last"`
+	Tops  map[string]int `json:"tops"`
+	Marks []Mark         `json:"marks,omitempty"`
+}
+
+// Mark is a bookmark: a page, and the line it was made on.
+type Mark struct {
+	Path string `json:"path"`
+	Top  int    `json:"top"`
 }
 
 type app struct {
@@ -249,15 +256,27 @@ func (a *app) home() {
 	for {
 		nav := a.d.Nav()
 		var items []ui.Item
-		var nodes []*Node // nil for the extra rows
-		cont := a.st.Last != "" && a.d.sha(a.st.Last) != ""
-		if cont {
+		var acts []func() // what A does on each row
+		if a.st.Last != "" && a.d.sha(a.st.Last) != "" {
 			items = append(items, ui.Item{Label: "Continue reading", Sub: sanitize(ui.Small, a.d.Title(a.st.Last)), Chevron: true})
-			nodes = append(nodes, nil)
+			acts = append(acts, func() { a.read(a.st.Last, "") })
+		}
+		if n := len(a.st.Marks); n > 0 {
+			sub := fmt.Sprintf("%d pages", n)
+			if n == 1 {
+				sub = sanitize(ui.Small, a.d.Title(a.st.Marks[0].Path))
+			}
+			items = append(items, ui.Item{Label: "Bookmarks", Sub: sub, Chevron: true})
+			acts = append(acts, func() {
+				if m, ok := a.bookmarks(nil, 0); ok {
+					a.st.Tops[m.Path] = m.Top
+					a.read(m.Path, "")
+				}
+			})
 		}
 		for _, n := range nav.Kids {
 			items = append(items, a.item(n))
-			nodes = append(nodes, n)
+			acts = append(acts, func() { a.open(n) })
 		}
 		saved, total := a.d.Saved()
 		dl := fmt.Sprintf("%d of %d pages saved", saved, total)
@@ -268,7 +287,7 @@ func (a *app) home() {
 			dl += " · checked " + ago(at, time.Now())
 		}
 		items = append(items, ui.Item{Label: "Download all for offline", Sub: dl})
-		nodes = append(nodes, nil)
+		acts = append(acts, a.downloadAll)
 		l.Items = items
 		l.Sel = min(l.Sel, len(items)-1)
 		s := a.scr
@@ -287,14 +306,7 @@ func (a *app) home() {
 		case ui.B, ui.Menu:
 			return
 		case ui.A:
-			switch {
-			case cont && l.Sel == 0:
-				a.read(a.st.Last, "")
-			case l.Sel == len(items)-1:
-				a.downloadAll()
-			default:
-				a.open(nodes[l.Sel])
-			}
+			acts[l.Sel]()
 		case ui.Y:
 			if p, q, ok := a.search(); ok {
 				a.read(p, q)
@@ -520,6 +532,11 @@ func (a *app) read(p, find string) {
 			if target, q, ok := a.search(); ok {
 				goTo(target, q, "")
 			}
+		case ui.Start:
+			if m, ok := a.bookmarks(pg, top); ok {
+				a.st.Tops[m.Path] = m.Top
+				goTo(m.Path, "", "")
+			}
 		case ui.B:
 			a.saveState()
 			if len(back) == 0 {
@@ -539,14 +556,16 @@ func (a *app) read(p, find string) {
 
 func (a *app) drawPage(pg *Page, top int) {
 	s := a.scr
-	hints := []ui.Hint{{Button: "L1/R1", Label: "Page"}}
+	// L1/R1 turning a screenful gives way to Bookmarks (Marks): six hints
+	// don't fit
+	var hints []ui.Hint
 	if len(pg.Links) > 0 {
 		hints = append(hints, ui.Hint{Button: "A", Label: "Links"})
 	}
 	if len(pg.Heads) > 1 {
 		hints = append(hints, ui.Hint{Button: "X", Label: "Sections"})
 	}
-	hints = append(hints, ui.Hint{Button: "Y", Label: "Search"}, ui.Hint{Button: "B", Label: "Back"})
+	hints = append(hints, ui.Hint{Button: "Y", Label: "Search"}, ui.Hint{Button: "START", Label: "Marks"}, ui.Hint{Button: "B", Label: "Back"})
 	sub := a.d.Breadcrumb(pg.Path)
 	if sub == "" {
 		sub = "Onion OS documentation"
@@ -760,6 +779,53 @@ func (a *app) pickLink(pg *Page, top int) (string, string, bool) {
 		return "", "", false
 	}
 	return target, anchor, true
+}
+
+// ---- bookmarks ----
+
+// markOf returns the index of p's bookmark, or -1.
+func (a *app) markOf(p string) int {
+	for i, m := range a.st.Marks {
+		if m.Path == p {
+			return i
+		}
+	}
+	return -1
+}
+
+// bookmarks lists the bookmarks, newest first, and returns the one chosen.
+// From a page (pg, scrolled to top) the first row bookmarks it there, or
+// removes its bookmark; either is saved at once.
+func (a *app) bookmarks(pg *Page, top int) (Mark, bool) {
+	var items []ui.Item
+	var marks []Mark // the bookmark on each row; none on the first from a page
+	if pg != nil {
+		if a.markOf(pg.Path) >= 0 {
+			items = append(items, ui.Item{Label: "Remove this page's bookmark"})
+		} else {
+			items = append(items, ui.Item{Label: "Bookmark this page", Sub: "Where you are on it now"})
+		}
+		marks = append(marks, Mark{})
+	}
+	for i := len(a.st.Marks) - 1; i >= 0; i-- {
+		m := a.st.Marks[i]
+		items = append(items, ui.Item{Label: sanitize(ui.Heading, a.d.Title(m.Path)), Sub: sanitize(ui.Small, a.d.Breadcrumb(m.Path)), Chevron: true})
+		marks = append(marks, m)
+	}
+	i, ok := a.scr.Choose(a.input, "Bookmarks", items)
+	if !ok {
+		return Mark{}, false
+	}
+	if marks[i].Path != "" {
+		return marks[i], true
+	}
+	if j := a.markOf(pg.Path); j >= 0 {
+		a.st.Marks = append(a.st.Marks[:j:j], a.st.Marks[j+1:]...)
+	} else {
+		a.st.Marks = append(a.st.Marks, Mark{pg.Path, top})
+	}
+	a.saveState()
+	return Mark{}, false
 }
 
 // ---- search ----

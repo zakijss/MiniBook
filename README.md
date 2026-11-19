@@ -12,7 +12,8 @@ The [Onion OS documentation](https://github.com/OnionUI/Onion) on the Miyoo Mini
 - Remembers the page you were reading and your place on each page.
 - **X** on a page lists its sections and jumps to one. **L1**/**R1** turn a screenful, **L2**/**R2** jump to the top or bottom of a page or a list.
 - **Y** searches page titles, and the text of the saved pages.
-- **START** opens Settings: start on the page you were reading, or clear the saved pages.
+- **START** on a page bookmarks it where you are, or removes its bookmark, and lists your bookmarks to jump to one. They are on Home too.
+- **START** on Home opens Settings: start on the page you were reading, or clear the saved pages.
 
 
 <p align="center"><img src="docs/desk.jpg" alt="A smoked black Miyoo Mini Plus lying by an open book, showing the Onion OS docs in MiniBook" width="100%"></p>

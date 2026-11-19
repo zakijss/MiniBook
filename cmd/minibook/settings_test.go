@@ -172,3 +172,45 @@ func TestKeepPlace(t *testing.T) {
 		t.Error("still marked unsaved")
 	}
 }
+
+// START on a page bookmarks it where it is, the list jumps back there
+// from the page and from home, and the same row removes it.
+func TestBookmarks(t *testing.T) {
+	scr, _ := lookScreen(t)
+	d := testDocs(t)
+	body := "# FAQ\n\n" + strings.Repeat("A line of text to scroll past.\n\n", 80)
+	d.cache.Put(cacheKey("faq.md"), []byte("b\n"+body))
+	d.learn("faq.md", body, "b")
+	dir := t.TempDir()
+	a := &app{scr: scr, d: d, dir: dir, poke: make(chan struct{}, 1), viewH: 320, st: State{Tops: map[string]int{}}}
+
+	// scroll down, bookmark, go to the top, jump to the bookmark
+	a.input = presses(ui.Down, ui.Down, ui.Start, ui.A, ui.L2, ui.Start, ui.Down, ui.A, ui.B)
+	a.read("faq.md", "")
+	if len(a.st.Marks) != 1 || a.st.Marks[0].Path != "faq.md" || a.st.Marks[0].Top == 0 {
+		t.Fatalf("marks %+v", a.st.Marks)
+	}
+	at := a.st.Marks[0].Top
+	if a.st.Tops["faq.md"] != at {
+		t.Errorf("jumped to line %d, bookmark at %d", a.st.Tops["faq.md"], at)
+	}
+	var saved State
+	if b, err := os.ReadFile(filepath.Join(dir, "state.json")); err != nil || json.Unmarshal(b, &saved) != nil || len(saved.Marks) != 1 {
+		t.Fatalf("bookmark not saved: %+v %v", saved, err)
+	}
+
+	// from home: Continue reading, then Bookmarks
+	a.st.Tops["faq.md"] = 0
+	a.input = presses(ui.Down, ui.A, ui.A, ui.B, ui.B)
+	a.home()
+	if a.st.Tops["faq.md"] != at {
+		t.Errorf("from home: line %d, bookmark at %d", a.st.Tops["faq.md"], at)
+	}
+
+	// the first row now removes it
+	a.input = presses(ui.Start, ui.A, ui.B)
+	a.read("faq.md", "")
+	if len(a.st.Marks) != 0 {
+		t.Errorf("not removed: %+v", a.st.Marks)
+	}
+}
