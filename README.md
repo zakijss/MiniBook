@@ -10,23 +10,21 @@ The [Onion OS documentation](https://github.com/OnionUI/Onion) on the Miyoo Mini
 
 - Every page you open is saved on the card; **Download all for offline** saves the rest.
 - Remembers the page you were reading and your place on each page.
-- **X** on a page lists its sections and jumps to one. **L1**/**R1** turn a screenful, **L2**/**R2** jump to the top or bottom of a page or a list.
-- **Y** searches page titles, and the text of the saved pages.
-- **START** on a page bookmarks it where you are, or removes its bookmark, and lists your bookmarks to jump to one. They are on Home too.
-- **START** on Home opens Settings: start on the page you were reading, or clear the saved pages.
-
 
 <p align="center"><img src="docs/desk.jpg" alt="A smoked black Miyoo Mini Plus lying by an open book, showing the Onion OS docs in MiniBook" width="100%"></p>
 
 ## Install
 
-- **MiniMart:** open [MiniMart](https://github.com/zakijss/MiniMart), then **Apps > MiniBook**. It checks the download and keeps your settings on updates.
-- **Zip:** download `minibook-VERSION.zip` from [Releases](https://github.com/zakijss/MiniBook/releases/latest), unzip it onto the root of the SD card, and restart.
-- **Every MiniDeck app at once:** [minideck-all.zip](https://github.com/zakijss/MiniDeck/releases/latest/download/minideck-all.zip).
+Open [MiniMart](https://github.com/zakijss/MiniMart) and pick **Apps > MiniBook**: it checks the download and keeps your settings on updates. Or unzip `minibook-VERSION.zip` from [Releases](https://github.com/zakijss/MiniBook/releases/latest) onto the root of the SD card and restart. Every MiniDeck app comes in one zip too: [minideck-all.zip](https://github.com/zakijss/MiniDeck/releases/latest/download/minideck-all.zip).
 
-## Requirements
+Needs a Miyoo Mini Plus on Onion OS 4.4, with Wi-Fi. Other devices and firmwares aren't supported.
 
-A Miyoo Mini Plus on Onion OS 4.4, with Wi-Fi. Other devices and firmwares aren't supported.
+## Using it
+
+- **X** on a page lists its sections and jumps to one. **L1**/**R1** turn a screenful, **L2**/**R2** jump to the top or bottom of a page or a list.
+- **Y** searches page titles, and the text of the saved pages.
+- **START** on a page bookmarks it where you are (or removes the bookmark) and lists your bookmarks. They are on Home too.
+- **START** on Home opens Settings: start on the page you were reading, or clear the saved pages.
 
 ## Building
 
