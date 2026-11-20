@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/hero.jpg" alt="A white Miyoo Mini Plus on a stand on a sunlit window sill, showing the Onion OS docs in MiniBook, with a smoked black one and a grey one lying beside it" width="100%"></p>
+<p align="center"><img src="docs/hero.jpg" alt="A white Miyoo Mini Plus on a walnut stand showing the Onion OS docs in MiniBook, on a walnut desk in an old laboratory, with a candlestick, spectacles and a smoked black one lying beside it" width="100%"></p>
 
 [![CI](https://github.com/zakijss/MiniBook/actions/workflows/ci.yml/badge.svg)](https://github.com/zakijss/MiniBook/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/zakijss/MiniBook)](https://github.com/zakijss/MiniBook/releases)
@@ -11,7 +11,7 @@ The [Onion OS documentation](https://github.com/OnionUI/Onion) on the Miyoo Mini
 - Every page you open is saved on the card; **Download all for offline** saves the rest.
 - Remembers the page you were reading and your place on each page.
 
-<p align="center"><img src="docs/desk.jpg" alt="A white Miyoo Mini Plus on a stand on a sunlit window sill, with a smoked black one lying beside it open at a page of the Onion OS docs" width="100%"></p>
+<p align="center"><img src="docs/desk.jpg" alt="From above: a grey Miyoo Mini Plus showing MiniBook's settings and a white one open at the FAQ, on a light wooden desk beside a pair of spectacles" width="100%"></p>
 
 ## Install
 
